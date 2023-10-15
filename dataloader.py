@@ -129,11 +129,11 @@ class CIFAR10(data.Dataset):
 
                 if corruption_type == 'unif':
                     C = uniform_mix_C(self.corruption_prob, num_classes)
-                    print(C)
+                    # print(C)
                     self.C = C
                 elif corruption_type == 'flip':
                     C = flip_labels_C(self.corruption_prob, num_classes)
-                    print(C)
+                    # print(C)
                     self.C = C
 
                 elif corruption_type == 'inst':
@@ -145,7 +145,7 @@ class CIFAR10(data.Dataset):
                                                                        0.1, seed)
                 elif corruption_type == 'flip2':
                     C = flip_labels_C_two(self.corruption_prob, num_classes)
-                    print(C)
+                    # print(C)
                     self.C = C
                 elif corruption_type == 'hierarchical':
                     assert num_classes == 100, 'You must use CIFAR-100 with the hierarchical corruption.'
@@ -165,7 +165,7 @@ class CIFAR10(data.Dataset):
                             tmp2 = np.delete(np.copy(tmp), j)
                             C[tmp[j], tmp2] += corruption_prob * 1/len(tmp2)
                     self.C = C
-                    print(C)
+                    # print(C)
 
                 else:
                     assert False, "Invalid corruption type '{}' given. Must be in {'unif', 'flip', 'hierarchical', 'inst'}".format(corruption_type)
