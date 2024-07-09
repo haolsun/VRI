@@ -139,23 +139,26 @@ class vri(MetaModule):
         h2 = self.tanh(self.linear2(h1))
         h3 = self.tanh(self.linear3(h2))
         mean = self.linear_mean(h3)
-        log_var = self.linear_var(h3)
-        return mean, log_var
+        std = self.linear_var(h3)
+        return mean, std
 
-    def forward(self, feat, target):
-        target = self.cls_emb(target)
+    def forward(self, dict):
+        if 'target' in dict:
+            target = self.cls_emb(dict['target'])
+            x = torch.cat([dict['feature'], target], dim=-1)
+        else:
+            x = torch.cat([dict['feature'], torch.zeros(dict['feature'].shape[0], 64).cuda()], dim=-1)
 
-        x = torch.cat([feat, target], dim=-1)
-
-        mean, log_var = self.encode(x) # [100, 10]
+        mean, log_var = self.encode(x)  # [100, 10]
         std = torch.exp(0.5 * log_var)
         eps = torch.randn_like(std)
 
-        s = 1 + log_var - mean.pow(2) - log_var.exp()
-        kl_loss = -0.5 * torch.mean(s)
+        # s = 1 + 2 * torch.log(std) - mean.pow(2) - std.pow(2)
+        # kl_loss = -0.5 * torch.mean(s)
 
-        return mean, log_var, F.sigmoid(mean + std*eps), torch.norm(std,2,dim=1).mean() #F.sigmoid(mean + std*eps), kl_loss
-        #return mean, log_var, F.sigmoid(mean + std*eps)*2-1, torch.norm(std,2,dim=1).mean() #F.sigmoid(mean + std*eps), kl_loss
+        # return mean, std, F.sigmoid(mean + std*eps), torch.norm(std,2,dim=1).mean()
+        return mean, std, F.sigmoid(mean + std * eps) #, torch.max(std, dim=0).values.mean()
+
 
 
 class vri_prior(MetaModule):
